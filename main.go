@@ -8,6 +8,6 @@ import (
 
 func main() {
 	osArgs := os.Args
-	fmt.Println(osArgs)
-	fmt.Println(len(osArgs))
+	fields := osArgs[1:]
+	fmt.Println(fields)
 }

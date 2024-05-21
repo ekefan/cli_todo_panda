@@ -1,6 +1,9 @@
 package task
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 // task is the model for applications tasks
 type task struct {
@@ -10,7 +13,8 @@ type task struct {
 
 var Tasks []task
 
-func CreateTask(desc, priority string, completed bool) {
+//CreateTask: creates a new task with desc, and priority
+func CreateTask(desc, priority string) {
 	newTask := task{
 		Desc: desc,
 		Priority: priority,
@@ -20,18 +24,26 @@ func CreateTask(desc, priority string, completed bool) {
 }
 
 
+
+//ListTasks: prints the list of tasks not completed to stdout
 func ListTasks() {
 	for i, tsk := range(Tasks) {
-		fmt.Println(i+1, tsk.Desc, tsk.Priority)
+		fmt.Fprint(os.Stdout, i+1, tsk.Desc, tsk.Priority)
 	}
 }
 
 func GetNext() {
 	nextTask := Tasks[1]
-	fmt.Println(2, nextTask.Desc, nextTask.Priority)
+	fmt.Fprint(os.Stdout, 2, nextTask.Desc, nextTask.Priority)
 }
+
 
 func DeleteTask(taskID int){
 	Tasks = append(Tasks[:taskID], Tasks[taskID:]...)
 	ListTasks()
+}
+
+func ClearAll() {
+	Tasks = nil
+	fmt.Fprintf(os.Stdout, "No task")
 }
