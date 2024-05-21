@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	// "fmt"
 	"strconv"
 	"strings"
 
@@ -14,13 +15,18 @@ const (
 	del = "done"
 	next = "next"
 	clear = "clear"
+	help = "help"
 
 )
 func main() {
 	osArgs := os.Args
 	fields := osArgs[1:]
-	
-	switch strings.ToLower(fields[1]) {
+	if len(fields) < 1 {
+		task.Help()
+		return
+	}
+
+	switch strings.ToLower(fields[0]) {
 		case add: //takes 4 cli args
 			task.CreateTask(fields[2], fields[3])
 		case list: //takes 2 cli args
@@ -32,5 +38,9 @@ func main() {
 			task.GetNext()
 		case clear:
 			task.ClearAll()
+		case help:
+			task.Help()
+		default:
+			task.Help()
 	}
 }

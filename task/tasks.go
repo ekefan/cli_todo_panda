@@ -47,3 +47,23 @@ func ClearAll() {
 	Tasks = nil
 	fmt.Fprintf(os.Stdout, "No task")
 }
+
+func Help(){
+	help := `Usage taskPanda <tag> <args>
+tags: 
+add : 
+taskPanda add <description> <priority>
+  priority can be [high, low,  none]
+list:
+  taskPanda list <args>
+  args:
+	all -- returns all tasks
+	high -- returns high priority
+	low -- returns low priority
+	On no arguments none priority task are returned
+done:
+  taskPanda done <taskID>
+clear:
+  clear all tasks from storage`
+		fmt.Fprintf(os.Stdout, help)
+}
