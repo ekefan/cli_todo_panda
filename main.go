@@ -4,11 +4,10 @@ import (
 	// "fmt"
 	// "io"
 	// "log"
-	"fmt"
+
 	"log"
 	"os"
 
-	"strconv"
 	"strings"
 
 	"github.com/ekefan/cli_todo_panda/store"
@@ -36,20 +35,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(tasks)
 	switch strings.ToLower(fields[0]) {
 		case add: //takes 4 cli args
 			s.CreateTask(fields)
 			return
 		case list: //takes 2 cli args
-			s.ListTasks()
+			s.ListTasks(tasks)
 			return
 		case del: //takes 3 cli args
-			taskID, _ := strconv.Atoi(fields[1])
-			s.DeleteTask(taskID)
+			s.DeleteTask(fields, tasks)
 			return
 		case clear:
-			s.ClearAll()
+			s.ClearAll(tasks)
 			return
 		case help:
 			s.Help()

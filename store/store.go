@@ -2,8 +2,12 @@ package store
 
 import (
 	"encoding/json"
-	"os"
+	"errors"
 	"io"
+	"log"
+	"os"
+	"slices"
+	"strings"
 )
 
 // "os"
@@ -68,4 +72,36 @@ func (s *Store) SaveTasks() error {
 		return err
 	}
 	return nil
+}
+
+
+func (s *Store) noTaskLeft()bool{
+	return len(s.Tasks) < 1
+}
+
+
+func correctArgLength(l int, args []string, flag int) {
+	var err error
+	if l != len(args) {
+		switch flag {
+		case 1: //create a new task
+			err= errors.New("usage: taskPanda add <desc> <priority>, need 4 args")
+		
+		case 2:
+			err = errors.New("usage: done <taskID, need only 2 args")
+		}
+		log.Fatal(err)
+	}
+}
+
+func checkPriority(priority string) bool {
+	priorities := []string{
+		"none",
+		"high",
+		"low",
+		"l",
+		"h",
+		"n",
+	}
+	return slices.Contains(priorities, strings.ToLower(priority))
 }
