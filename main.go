@@ -1,46 +1,61 @@
 package main
 
 import (
-	"os"
 	// "fmt"
+	// "io"
+	// "log"
+	"fmt"
+	"log"
+	"os"
+
 	"strconv"
 	"strings"
 
-	"github.com/ekefan/cli_todo_panda/task"
+	"github.com/ekefan/cli_todo_panda/store"
 )
 
 const (
 	add = "add"
-	list = "list"
+	list = "tasks"
 	del = "done"
-	next = "next"
 	clear = "clear"
 	help = "help"
 
 )
+
 func main() {
+	s := store.NewStore()
 	osArgs := os.Args
 	fields := osArgs[1:]
 	if len(fields) < 1 {
-		task.Help()
+		s.Help()
 		return
 	}
-
+	//Load the tasks from the storage
+	tasks, err := s.LoadTasks()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(tasks)
 	switch strings.ToLower(fields[0]) {
 		case add: //takes 4 cli args
-			task.CreateTask(fields[2], fields[3])
+			s.CreateTask(fields)
+			return
 		case list: //takes 2 cli args
-			task.ListTasks()
+			s.ListTasks()
+			return
 		case del: //takes 3 cli args
 			taskID, _ := strconv.Atoi(fields[1])
-			task.DeleteTask(taskID)
-		case next:
-			task.GetNext()
+			s.DeleteTask(taskID)
+			return
 		case clear:
-			task.ClearAll()
+			s.ClearAll()
+			return
 		case help:
-			task.Help()
+			s.Help()
+			return
 		default:
-			task.Help()
+			s.Help()
+			return
 	}
 }
