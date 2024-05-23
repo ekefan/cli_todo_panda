@@ -119,7 +119,7 @@ tasks: lists all uncompleted tasks
 		-l -- returns low priority
 		-n -- returns none priority
 		
-done: completes a tasks and removes it from completed tasks
+complete: completes a tasks and removes it from completed tasks
   	usage: taskPanda done <taskID>
 
 clear: removes every complete from tasks

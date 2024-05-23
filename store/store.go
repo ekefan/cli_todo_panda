@@ -2,12 +2,8 @@ package store
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"os"
-	"slices"
-	"strings"
 )
 
 // "os"
@@ -35,21 +31,22 @@ func (s *Store) LoadTasks() error {
 		return err
 	}
 	filePath = home + "/task.json"
-
-	jsonFile, err := os.Open(filePath)
-	if err != nil {
+	var jsonFile *os.File
+	defer jsonFile.Close()
+	jsonFile, errFound := fileExists()
+	if errFound == nil {
+		jsonFile, err = os.Open(filePath)
+		if err != nil {
 		//PrintError to stdout
 		return err
 	}
-	defer jsonFile.Close()
 
+	}
 	jsonTask, err := io.ReadAll(jsonFile)
-	if err != nil {
+	if err != nil {	
 		//Print Error to stdOut
 		return err
 	}
-
-	// Unmarshall the json and store it to readTasks	
 	err = json.Unmarshal(jsonTask, &s.Tasks)
 	if err != nil {
 		//Print Error to stdOUT
@@ -72,57 +69,4 @@ func (s *Store) SaveTasks() error {
 		return err
 	}
 	return nil
-}
-
-
-func (s *Store) noTaskLeft()bool{
-	return len(s.Tasks) < 1
-}
-
-
-func correctArgLength(l int, args []string, flag int) error {
-	var (
-		errMsg string
-		err error
-	)
-	if l != len(args) {
-		switch flag {
-		case 1: //create a new task
-			errMsg = "need 3 args, usage: taskPanda add <desc> <priority>"
-			fmt.Fprintf(os.Stdout, "%s\n", errMsg)
-			err = errors.New(errMsg)
-			return err
-		
-		case 2:
-			errMsg = "need 1 arg, usage: taskPanda tasks"
-			err = errors.New(errMsg)
-			fmt.Fprintf(os.Stdout, "%s\n", errMsg)
-			return err
-		case 3:
-			errMsg = "need 2 args, usage: taskPanda complete and <taskID>"
-			err = errors.New(errMsg)
-			fmt.Fprintf(os.Stdout, "%s\n", errMsg)
-			return err
-		case 4:
-			errMsg = "need 1 arg, usage: taskPanda clear"
-			err = errors.New(errMsg)
-			fmt.Fprintf(os.Stdout, "%s\n", errMsg)
-			return err
-	    default:
-			errMsg = ""
-		}
-	}
-	return nil
-}
-
-func checkPriority(priority string) bool {
-	priorities := []string{
-		"none",
-		"high",
-		"low",
-		"l",
-		"h",
-		"n",
-	}
-	return slices.Contains(priorities, strings.ToLower(priority))
 }
