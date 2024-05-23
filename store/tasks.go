@@ -17,7 +17,10 @@ type Task struct {
 
 //CreateTask: creates a new Task with desc, and priority
 func (s *Store)CreateTask(args []string) {
-	correctArgLength(3, args, 1)
+	if err := correctArgLength(3, args, 1); err != nil {
+		return
+	}
+
 
 	if !checkPriority(args[2]){
 		err := errors.New("<priority> must either be high/(H), low/(L) or none, (N)")
@@ -37,32 +40,33 @@ func (s *Store)CreateTask(args []string) {
 
 
 //ListTasks: prints the list of tasks not completed to stdout
-func (s *Store)ListTasks(tasks []Task) {
-	if len(tasks) == 0 {
-		var err error
-		tasks, err = s.LoadTasks()
-		if err != nil {
-		log.Fatal(err)
-		}
-		if len(tasks) == 0 {
-			noTask := "No tasks added yet\n add: taskPanda add <desc> <priority>"
-			fmt.Fprintf(os.Stdout, "%s", noTask)
+func (s *Store)ListTasks(args []string, fromUser bool) { 
+	if fromUser{
+		if err := correctArgLength(1, args, 2); err != nil {
 			return
 		}
+	} // flag 2 for listing task
+	if len(s.Tasks) == 0 {
+		noTask := "No tasks added yet\n add: taskPanda add <desc> <priority>"
+		fmt.Fprintf(os.Stdout, "%s", noTask)
+		return
 	}
-	for i, tsk := range(tasks) {
+
+	for i, tsk := range(s.Tasks) {
 		fmt.Fprintf(os.Stdout, "%d. %s %s\n",i+1, tsk.Desc, tsk.Priority)
 	}
 }
 
 
-func (s *Store)DeleteTask(args []string, tasks []Task){ 
-	correctArgLength(2, args, 2)
+func (s *Store)DeleteTask(args []string){ 
+	if err := correctArgLength(2, args, 3); err != nil {
+		return
+	}
 	taskID, err := strconv.Atoi(args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
-	if len(tasks) == 0 {
+	if len(s.Tasks) == 0 {
 		fmt.Fprintf(os.Stdout, "%s", "All tasks are completed\nAdd a tasks: add <desc> <priority>")
 		return
 	}
@@ -72,13 +76,14 @@ func (s *Store)DeleteTask(args []string, tasks []Task){
 		fmt.Fprintf(os.Stdout, "No incomplete task with id, %d", taskID)
 		return
 	}
-	task := s.Tasks[idx].Desc
+	taskToComplete := s.Tasks[idx].Desc
+	tasks := s.Tasks
 	s.Tasks = nil
 	s.Tasks = append(tasks[:idx], tasks[idx+1:]...)
-	fmt.Fprintf(os.Stdout, "%s Completed\n%d Tasks Left:\n", task, len(s.Tasks))
+	fmt.Fprintf(os.Stdout, "%s Completed\n%d Tasks Left:\n", taskToComplete, len(s.Tasks))
 
 	if !s.noTaskLeft() {
-		s.ListTasks(s.Tasks)
+		s.ListTasks([]string{}, false)
 	}
 	err = s.SaveTasks()
 	if err != nil {
@@ -86,8 +91,11 @@ func (s *Store)DeleteTask(args []string, tasks []Task){
 	}
 }
 
-func (s *Store)ClearAll(tasks []Task) {
-	if len(tasks) == 0 {
+func (s *Store)ClearAll(args []string) {
+	if err := correctArgLength(1, args, 4); err != nil {
+		return
+	}
+	if len(s.Tasks) == 0 {
 		fmt.Fprintf(os.Stdout, "%s", "No task added yet")
 		return
 	}

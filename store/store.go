@@ -3,8 +3,8 @@ package store
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
-	"log"
 	"os"
 	"slices"
 	"strings"
@@ -28,34 +28,34 @@ func NewStore() *Store {
 var filePath string
 
 //LoadTasks gets json data of the tasks and converts it the tasks array
-func (s *Store) LoadTasks() ([]Task, error) {
+func (s *Store) LoadTasks() error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		//Print err to stdout
-		return nil, err
+		return err
 	}
 	filePath = home + "/task.json"
 
 	jsonFile, err := os.Open(filePath)
 	if err != nil {
 		//PrintError to stdout
-		return nil, err
+		return err
 	}
 	defer jsonFile.Close()
 
 	jsonTask, err := io.ReadAll(jsonFile)
 	if err != nil {
 		//Print Error to stdOut
-		return nil, err
+		return err
 	}
 
 	// Unmarshall the json and store it to readTasks	
 	err = json.Unmarshal(jsonTask, &s.Tasks)
 	if err != nil {
 		//Print Error to stdOUT
-		return nil, err
+		return err
 	}
-	return s.Tasks, nil
+	return nil
 }
 
 // SaveTasks converts tasks to json and writes data to a json file in the home dir
@@ -80,18 +80,39 @@ func (s *Store) noTaskLeft()bool{
 }
 
 
-func correctArgLength(l int, args []string, flag int) {
-	var err error
+func correctArgLength(l int, args []string, flag int) error {
+	var (
+		errMsg string
+		err error
+	)
 	if l != len(args) {
 		switch flag {
 		case 1: //create a new task
-			err= errors.New("usage: taskPanda add <desc> <priority>, need 4 args")
+			errMsg = "need 3 args, usage: taskPanda add <desc> <priority>"
+			fmt.Fprintf(os.Stdout, "%s\n", errMsg)
+			err = errors.New(errMsg)
+			return err
 		
 		case 2:
-			err = errors.New("usage: done <taskID, need only 2 args")
+			errMsg = "need 1 arg, usage: taskPanda tasks"
+			err = errors.New(errMsg)
+			fmt.Fprintf(os.Stdout, "%s\n", errMsg)
+			return err
+		case 3:
+			errMsg = "need 2 args, usage: taskPanda complete and <taskID>"
+			err = errors.New(errMsg)
+			fmt.Fprintf(os.Stdout, "%s\n", errMsg)
+			return err
+		case 4:
+			errMsg = "need 1 arg, usage: taskPanda clear"
+			err = errors.New(errMsg)
+			fmt.Fprintf(os.Stdout, "%s\n", errMsg)
+			return err
+	    default:
+			errMsg = ""
 		}
-		log.Fatal(err)
 	}
+	return nil
 }
 
 func checkPriority(priority string) bool {
