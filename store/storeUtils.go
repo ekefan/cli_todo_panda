@@ -72,13 +72,16 @@ func fileExists() (*os.File, error){
 	_, errFound := os.Stat(filePath);
 	if errors.Is(errFound, os.ErrNotExist) {
 		newFile, err = os.Create(filePath)
+		fmt.Println(newFile == nil)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
+			fmt.Println("got here")
 			return nil, err
 		}
 		if _, err := newFile.Write([]byte("null\n")); err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
-			return nil, err
+			fmt.Println("got here 2")
+			return newFile, err
 		}
 	}
 	return newFile, nil

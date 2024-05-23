@@ -2,6 +2,7 @@ package store
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 )
@@ -23,14 +24,22 @@ func NewStore() *Store {
 }
 var filePath string
 
+func getFilePath(name string) error {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+	filePath = fmt.Sprintf("%s/%s", home, name)
+	return nil
+}
+
 //LoadTasks gets json data of the tasks and converts it the tasks array
 func (s *Store) LoadTasks() error {
-	home, err := os.UserHomeDir()
+	err := getFilePath("task.json")
 	if err != nil {
 		//Print err to stdout
 		return err
 	}
-	filePath = home + "/task.json"
 	var jsonFile *os.File
 	defer jsonFile.Close()
 	jsonFile, errFound := fileExists()
