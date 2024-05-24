@@ -63,8 +63,9 @@ func (s *Store)DeleteTask(args []string){
 		return
 	}
 	taskID, err := strconv.Atoi(args[1])
-	if err != nil {
-		log.Fatal(err)
+	if err != nil || taskID < 1{
+		fmt.Fprintf(os.Stdout, "<taskID must contain only integers within 1 - 10")
+		return
 	}
 	if len(s.Tasks) == 0 {
 		fmt.Fprintf(os.Stdout, "%s", "All tasks are completed\nAdd a tasks: add <desc> <priority>")
@@ -106,23 +107,23 @@ func (s *Store)ClearAll(args []string) {
 
 func (s *Store)Help(){
 	help := `Usage taskPanda <tag> <args>
-tags: 
+tags:
 add :  adds a new task to incomplete tasks
 	usage: taskPanda add <description> <priority>
-  	priority can be [high(H), low(L),  none(N)] -- can ignore caps
+	priority can be [high(H), low(L),  none(N)] -- can ignore caps
 
 tasks: lists all uncompleted tasks
-  	usage: taskPanda tasks <tag>
-  	<tag>:
+	usage: taskPanda tasks <tag>
+	<tag>:
 		when no tag -- returns all tasks
 		-h -- returns high priority
 		-l -- returns low priority
 		-n -- returns none priority
-		
-complete: completes a tasks and removes it from completed tasks
-  	usage: taskPanda done <taskID>
 
-clear: removes every complete from tasks
-  	usuage: clear all tasks from storage`
+complete: completes a tasks and removes it from completed tasks
+	usage: taskPanda done <taskID>
+
+clear: removes every tasks from storage
+	usuage: taskPanda clear`
 		fmt.Fprintf(os.Stdout, "%s", help)
 }

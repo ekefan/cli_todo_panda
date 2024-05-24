@@ -96,6 +96,121 @@ func TestListTasks(t *testing.T){
 	require.Equal(t, tasksString, errMsg)
 }
 func TestDeleteTask(t *testing.T){
+	ts := NewStore()
+	err := ts.SetFilePath("CRUD_Test.json")
+	require.NoError(t, err)
+	for i := 0; i < 4; i++ {
+		nt := randomTask()	
+		ts.Tasks = append(ts.Tasks, nt)
+	}
+	//case one correct id
+	field := []string{
+		"complete",
+		"2",
+	}
+	stdD := &stdRW{}
+	redirectStdOut(stdD)
+	lenBefore := len(ts.Tasks)
+	ts.DeleteTask(field)
+	receiveFromStdOut(stdD)
+	lenAfter := len(ts.Tasks)
+	require.Equal(t, lenBefore - lenAfter, 1)
+	//ID greater than highest task ID
+	field = []string{
+		"complete",
+		"35",
+	}
+	stdD = &stdRW{}
+	err = redirectStdOut(stdD)
+	require.NoError(t, err)
+	ts.DeleteTask(field)
+	msgString := receiveFromStdOut(stdD)
+	require.NotEmpty(t, msgString)
+	require.Equal(t, msgString, "No incomplete task with id, 35")
+
+	//Invalid Id
+	field = []string{
+		"complete",
+		"-1",
+	}
+	stdD = &stdRW{}
+	err = redirectStdOut(stdD)
+	require.NoError(t, err)
+	ts.DeleteTask(field)
+	msgString = receiveFromStdOut(stdD)
+	require.NotEmpty(t, msgString)
+	require.Equal(t, msgString, "<taskID must contain only integers within 1 - 10")
 }
-func TestClearAll(t *testing.T){}
-func TestHelp(t *testing.T){}
+func TestClearAll(t *testing.T){
+	ts := NewStore()
+	err := ts.SetFilePath("CRUD_Test.json")
+	require.NoError(t, err)
+	//case one clear full storage with right length of argument
+	for i := 0; i < 4; i++ {
+		nt := randomTask()	
+		ts.Tasks = append(ts.Tasks, nt)
+	}
+	ts.SaveTasks()
+	stdC := &stdRW{}
+	redirectStdOut(stdC)
+	field := []string{
+		"clear",
+	}
+	ts.ClearAll(field)
+	msg := receiveFromStdOut(stdC)
+	require.NotEmpty(t, msg)
+	require.Equal(t, msg, "All Tasks cleared")
+
+	// case two clear empty storage with right length of argum
+	ts.Tasks = nil
+	stdC = &stdRW{}
+	redirectStdOut(stdC)
+	ts.ClearAll(field)
+	msg = receiveFromStdOut(stdC)
+	require.NotEmpty(t, msg)
+	require.Equal(t, msg, "No task added yet")
+
+	// case three incorrect argument length
+	stdC = &stdRW{}
+	field = []string{
+		"No correct",
+		"argument length",
+	}
+	redirectStdOut(stdC)
+	ts.ClearAll(field)
+	msg = receiveFromStdOut(stdC)
+	require.NotEmpty(t, msg)
+	require.Equal(t, msg, "need 1 arg, usage: taskPanda clear\n")
+
+
+}
+func TestHelp(t *testing.T){
+	ts := NewStore()
+	err := ts.SetFilePath("CRUD_Test.json")
+	require.NoError(t, err)
+	helpStr := `Usage taskPanda <tag> <args>
+tags:
+add :  adds a new task to incomplete tasks
+	usage: taskPanda add <description> <priority>
+	priority can be [high(H), low(L),  none(N)] -- can ignore caps
+
+tasks: lists all uncompleted tasks
+	usage: taskPanda tasks <tag>
+	<tag>:
+		when no tag -- returns all tasks
+		-h -- returns high priority
+		-l -- returns low priority
+		-n -- returns none priority
+
+complete: completes a tasks and removes it from completed tasks
+	usage: taskPanda done <taskID>
+
+clear: removes every tasks from storage
+	usuage: taskPanda clear`
+	stdH := &stdRW{}
+	redirectStdOut(stdH)
+	ts.Help()
+	msg := receiveFromStdOut(stdH)
+	require.NotEmpty(t, msg)
+	require.Equal(t, msg, helpStr)			
+}
