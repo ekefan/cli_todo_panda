@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "fmt"
 	"fmt"
 	"os"
 
@@ -28,6 +27,12 @@ func main() {
 	if len(fields) < 1 {
 		s.Help()
 		return
+	}
+	// setFilePath
+	srr := s.SetFilePath("task.json")
+	if srr != nil {
+		//Print err to stdout
+		fmt.Fprintf(os.Stdout, "Couldn't set file path: %v", srr)
 	}
 	//Load the tasks from the storage
 	err := s.LoadTasks()
