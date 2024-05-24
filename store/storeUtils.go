@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"bytes"
+	"io"
 )
 
 
@@ -72,17 +74,52 @@ func fileExists() (*os.File, error){
 	_, errFound := os.Stat(filePath);
 	if errors.Is(errFound, os.ErrNotExist) {
 		newFile, err = os.Create(filePath)
-		fmt.Println(newFile == nil)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
-			fmt.Println("got here")
 			return nil, err
 		}
 		if _, err := newFile.Write([]byte("null\n")); err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
-			fmt.Println("got here 2")
-			return newFile, err
+			return nil, err
 		}
 	}
 	return newFile, nil
+}
+
+type stdRW struct {
+	old *os.File
+	reader *os.File
+	writer *os.File
+	chl chan string
+}
+
+
+
+func redirectStdOut(std *stdRW) error{
+	r, w, err := os.Pipe()
+	if err != nil {
+		return err
+	}
+	std.old = os.Stdout
+	std.reader = r
+	std.writer = w
+	std.chl = make(chan string)
+
+	os.Stdout = std.writer
+	go func(reader *os.File) {
+		var buffer bytes.Buffer
+		io.Copy(&buffer, std.reader)
+		std.chl <- buffer.String()
+		close(std.chl)
+	}(std.reader)
+	return nil
+}
+
+func receiveFromStdOut(std *stdRW) string {
+
+	std.writer.Close()
+	os.Stdout = std.old
+	stdOutput := <- std.chl
+	std.reader.Close()
+	return stdOutput
 }

@@ -24,7 +24,7 @@ func NewStore() *Store {
 }
 var filePath string
 
-func getFilePath(name string) error {
+func (store *Store) SetFilePath(name string) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -35,15 +35,11 @@ func getFilePath(name string) error {
 
 //LoadTasks gets json data of the tasks and converts it the tasks array
 func (s *Store) LoadTasks() error {
-	err := getFilePath("task.json")
-	if err != nil {
-		//Print err to stdout
-		return err
-	}
 	var jsonFile *os.File
 	defer jsonFile.Close()
 	jsonFile, errFound := fileExists()
 	if errFound == nil {
+		var err error
 		jsonFile, err = os.Open(filePath)
 		if err != nil {
 		//PrintError to stdout
