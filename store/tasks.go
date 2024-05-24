@@ -1,7 +1,6 @@
 package store
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -23,8 +22,9 @@ func (s *Store)CreateTask(args []string) {
 
 
 	if !checkPriority(args[2]){
-		err := errors.New("<priority> must either be high/(H), low/(L) or none, (N)")
-		log.Fatal(err)
+		errMsg := "<priority> must either be high/(H), low/(L) or none, (N)"
+		fmt.Fprintf(os.Stdout, "%s\n", errMsg)
+		return
 	}
 	newTask := Task{
 		Desc: args[1],

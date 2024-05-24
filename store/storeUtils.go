@@ -116,7 +116,6 @@ func redirectStdOut(std *stdRW) error{
 }
 
 func receiveFromStdOut(std *stdRW) string {
-
 	std.writer.Close()
 	os.Stdout = std.old
 	stdOutput := <- std.chl
