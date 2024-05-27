@@ -148,43 +148,29 @@ func TestClearAll(t *testing.T){
 	ts := NewStore()
 	err := ts.SetFilePath("CRUD_Test.json")
 	require.NoError(t, err)
-	//case one clear full storage with right length of argument
 	for i := 0; i < 4; i++ {
 		nt := randomTask()	
 		ts.Tasks = append(ts.Tasks, nt)
 	}
-	ts.SaveTasks()
-	stdC := &stdRW{}
-	redirectStdOut(stdC)
-	field := []string{
-		"clear",
+	testCase := []struct{
+		name string
+		field []string
+		outputMsg string
+	}{
+		{name: "clear storage", field: []string{"clear"}, outputMsg: "All Tasks cleared"},
+		{name: "clearing empty storage", field: []string{"clear"}, outputMsg: "No task added yet"},
+		{name: "incorrect argument length", field: []string{"clear", "incorrect arg length"}, outputMsg: "need 1 arg, usage: taskPanda clear\n"},
 	}
-	ts.ClearAll(field)
-	msg := receiveFromStdOut(stdC)
-	require.NotEmpty(t, msg)
-	require.Equal(t, msg, "All Tasks cleared")
-
-	// case two clear empty storage with right length of argum
-	ts.Tasks = nil
-	stdC = &stdRW{}
-	redirectStdOut(stdC)
-	ts.ClearAll(field)
-	msg = receiveFromStdOut(stdC)
-	require.NotEmpty(t, msg)
-	require.Equal(t, msg, "No task added yet")
-
-	// case three incorrect argument length
-	stdC = &stdRW{}
-	field = []string{
-		"No correct",
-		"argument length",
+	for _, tc := range(testCase) {
+		stdC := &stdRW{}
+		if tc.name == 	"clear storage" {ts.SaveTasks()}
+		if tc.name == "clearing empty storage" {ts.Tasks = nil}
+		redirectStdOut(stdC)
+		ts.ClearAll(tc.field)
+		msg := receiveFromStdOut(stdC)
+		require.NotEmpty(t, msg)
+		require.Equal(t, msg, tc.outputMsg)
 	}
-	redirectStdOut(stdC)
-	ts.ClearAll(field)
-	msg = receiveFromStdOut(stdC)
-	require.NotEmpty(t, msg)
-	require.Equal(t, msg, "need 1 arg, usage: taskPanda clear\n")
-
 
 }
 func TestHelp(t *testing.T){
