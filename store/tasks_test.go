@@ -19,44 +19,45 @@ func TestCreateTask(t *testing.T){
 	ts.CreateTask(field)
 	require.Equal(t, ts.Tasks[0].Desc, newTask.Desc)
 	require.Equal(t, ts.Tasks[0].Priority, newTask.Priority)
-
+	//Create check store
 	cs := NewStore()
 	cs.LoadTasks()
 	require.Equal(t, cs.Tasks[0].Desc, newTask.Desc)
 	require.Equal(t, cs.Tasks[0].Priority, newTask.Priority)
-
-
-	//case two incorrect length of the field
-	nt := randomTask()
-	field = []string{
-		"add",
-		nt.Desc,
-
+	testCases := []struct{
+		testName string
+		field []string
+		errMsg string
+	}{
+		{
+			testName: "IncorrectFieldLength",
+			field:	[]string{
+				"add",
+				randomTask().Desc,
+			},
+			errMsg: "need 3 args, usage: taskPanda add <desc> <priority>\n",
+		},
+		{
+			testName: "WrongPriorityFormat",
+			field:	[]string{
+				"add",
+				randomTask().Desc,
+				"notPriority",
+			},
+			errMsg: "<priority> must either be high/(H), low/(L) or none, (N)\n",
+		},
 	}
-	var std = &stdRW{}
-	err = redirectStdOut(std)
-	require.NoError(t, err)
-	ts.CreateTask(field)
-	errString := receiveFromStdOut(std)
-	require.NotEmpty(t, errString)
-	errMsg := "need 3 args, usage: taskPanda add <desc> <priority>\n"
-	require.Equal(t, errString, errMsg)
-
-	//case three incorrect priority arg
-	nt = randomTask()
-	field = []string{
-		"fileName",
-		nt.Desc,
-		"Wrong description",
+	for _, tc := range(testCases) {
+		t.Run(tc.testName, func(t *testing.T){
+			var stdP = &stdRW{}
+			err = redirectStdOut(stdP)
+			require.NoError(t, err)
+			ts.CreateTask(tc.field)
+			errString := receiveFromStdOut(stdP)
+			require.NotEmpty(t, errString)
+			require.Equal(t, errString, tc.errMsg)
+		})
 	}
-	var stdP = &stdRW{}
-	err = redirectStdOut(stdP)
-	require.NoError(t, err)
-	ts.CreateTask(field)
-	errString = receiveFromStdOut(stdP)
-	require.NotEmpty(t, errString)
-	errMsg = "<priority> must either be high/(H), low/(L) or none, (N)\n"
-	require.Equal(t, errString, errMsg)
 
 }
 
