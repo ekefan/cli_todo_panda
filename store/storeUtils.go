@@ -86,6 +86,7 @@ func fileExists() (*os.File, error){
 	return newFile, nil
 }
 
+//stdRW defines the struct that defines the fields from redirecting os.Stdout to a writer/reader and restoring it back.
 type stdRW struct {
 	old *os.File
 	reader *os.File
@@ -122,3 +123,23 @@ func receiveFromStdOut(std *stdRW) string {
 	std.reader.Close()
 	return stdOutput
 }
+
+var HELP_STR = `Usage taskPanda <tag> <args>
+tags:
+add :  adds a new task to incomplete tasks
+	usage: taskPanda add <description> <priority>
+	priority can be [high(H), low(L),  none(N)] -- can ignore caps
+
+tasks: lists all uncompleted tasks
+usage: taskPanda tasks <tag>
+<tag>:
+		when no tag -- returns all tasks
+		-h -- returns high priority
+		-l -- returns low priority
+		-n -- returns none priority
+
+complete: completes a tasks and removes it from completed tasks
+	usage: taskPanda done <taskID>
+
+clear: removes every tasks from storage
+	usuage: taskPanda clear`

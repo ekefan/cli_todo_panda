@@ -104,110 +104,80 @@ func TestDeleteTask(t *testing.T){
 		nt := randomTask()	
 		ts.Tasks = append(ts.Tasks, nt)
 	}
-	//case one correct id
-	field := []string{
-		"complete",
-		"2",
+	testCases := []struct{
+		name string
+		field []string
+		errMsg string
+	}{
+		{name: "Correct ID",field: []string{"complete","1",}},
+		{
+			name: "Id greater than number of task",
+			field: []string{"complete","35",}, 
+			errMsg:"No incomplete task with id, 35",
+		},
+		{
+			name: "Invalid ID",
+			field: []string{"complete","-1",}, 
+			errMsg:"<taskID must contain only integers within 1 - 10",
+		},
 	}
-	stdD := &stdRW{}
-	redirectStdOut(stdD)
-	lenBefore := len(ts.Tasks)
-	ts.DeleteTask(field)
-	receiveFromStdOut(stdD)
-	lenAfter := len(ts.Tasks)
-	require.Equal(t, lenBefore - lenAfter, 1)
-	//ID greater than highest task ID
-	field = []string{
-		"complete",
-		"35",
-	}
-	stdD = &stdRW{}
-	err = redirectStdOut(stdD)
-	require.NoError(t, err)
-	ts.DeleteTask(field)
-	msgString := receiveFromStdOut(stdD)
-	require.NotEmpty(t, msgString)
-	require.Equal(t, msgString, "No incomplete task with id, 35")
 
-	//Invalid Id
-	field = []string{
-		"complete",
-		"-1",
+	for _, tc := range(testCases) {
+		t.Run(tc.name, func(t *testing.T){
+			stdD := &stdRW{}
+			if tc.name == "Correct ID" {
+				redirectStdOut(stdD)
+				lenBefore := len(ts.Tasks)
+				ts.DeleteTask(tc.field)
+				receiveFromStdOut(stdD)
+				lenAfter := len(ts.Tasks)
+				require.Equal(t, lenBefore - lenAfter, 1)	
+			}else {
+				err = redirectStdOut(stdD)
+				require.NoError(t, err)
+				ts.DeleteTask(tc.field)
+				msgString := receiveFromStdOut(stdD)
+				require.NotEmpty(t, msgString)
+				require.Equal(t, msgString, tc.errMsg)
+			}
+
+		})
 	}
-	stdD = &stdRW{}
-	err = redirectStdOut(stdD)
-	require.NoError(t, err)
-	ts.DeleteTask(field)
-	msgString = receiveFromStdOut(stdD)
-	require.NotEmpty(t, msgString)
-	require.Equal(t, msgString, "<taskID must contain only integers within 1 - 10")
 }
 func TestClearAll(t *testing.T){
 	ts := NewStore()
 	err := ts.SetFilePath("CRUD_Test.json")
 	require.NoError(t, err)
-	//case one clear full storage with right length of argument
 	for i := 0; i < 4; i++ {
 		nt := randomTask()	
 		ts.Tasks = append(ts.Tasks, nt)
 	}
-	ts.SaveTasks()
-	stdC := &stdRW{}
-	redirectStdOut(stdC)
-	field := []string{
-		"clear",
+	testCase := []struct{
+		name string
+		field []string
+		outputMsg string
+	}{
+		{name: "clear storage", field: []string{"clear"}, outputMsg: "All Tasks cleared"},
+		{name: "clearing empty storage", field: []string{"clear"}, outputMsg: "No task added yet"},
+		{name: "incorrect argument length", field: []string{"clear", "incorrect arg length"}, outputMsg: "need 1 arg, usage: taskPanda clear\n"},
 	}
-	ts.ClearAll(field)
-	msg := receiveFromStdOut(stdC)
-	require.NotEmpty(t, msg)
-	require.Equal(t, msg, "All Tasks cleared")
-
-	// case two clear empty storage with right length of argum
-	ts.Tasks = nil
-	stdC = &stdRW{}
-	redirectStdOut(stdC)
-	ts.ClearAll(field)
-	msg = receiveFromStdOut(stdC)
-	require.NotEmpty(t, msg)
-	require.Equal(t, msg, "No task added yet")
-
-	// case three incorrect argument length
-	stdC = &stdRW{}
-	field = []string{
-		"No correct",
-		"argument length",
+	for _, tc := range(testCase) {
+		stdC := &stdRW{}
+		if tc.name == 	"clear storage" {ts.SaveTasks()}
+		if tc.name == "clearing empty storage" {ts.Tasks = nil}
+		redirectStdOut(stdC)
+		ts.ClearAll(tc.field)
+		msg := receiveFromStdOut(stdC)
+		require.NotEmpty(t, msg)
+		require.Equal(t, msg, tc.outputMsg)
 	}
-	redirectStdOut(stdC)
-	ts.ClearAll(field)
-	msg = receiveFromStdOut(stdC)
-	require.NotEmpty(t, msg)
-	require.Equal(t, msg, "need 1 arg, usage: taskPanda clear\n")
-
 
 }
 func TestHelp(t *testing.T){
 	ts := NewStore()
 	err := ts.SetFilePath("CRUD_Test.json")
 	require.NoError(t, err)
-	helpStr := `Usage taskPanda <tag> <args>
-tags:
-add :  adds a new task to incomplete tasks
-	usage: taskPanda add <description> <priority>
-	priority can be [high(H), low(L),  none(N)] -- can ignore caps
-
-tasks: lists all uncompleted tasks
-	usage: taskPanda tasks <tag>
-	<tag>:
-		when no tag -- returns all tasks
-		-h -- returns high priority
-		-l -- returns low priority
-		-n -- returns none priority
-
-complete: completes a tasks and removes it from completed tasks
-	usage: taskPanda done <taskID>
-
-clear: removes every tasks from storage
-	usuage: taskPanda clear`
+	helpStr := HELP_STR
 	stdH := &stdRW{}
 	redirectStdOut(stdH)
 	ts.Help()
