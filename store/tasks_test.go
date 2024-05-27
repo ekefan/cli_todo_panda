@@ -177,25 +177,7 @@ func TestHelp(t *testing.T){
 	ts := NewStore()
 	err := ts.SetFilePath("CRUD_Test.json")
 	require.NoError(t, err)
-	helpStr := `Usage taskPanda <tag> <args>
-tags:
-add :  adds a new task to incomplete tasks
-	usage: taskPanda add <description> <priority>
-	priority can be [high(H), low(L),  none(N)] -- can ignore caps
-
-tasks: lists all uncompleted tasks
-	usage: taskPanda tasks <tag>
-	<tag>:
-		when no tag -- returns all tasks
-		-h -- returns high priority
-		-l -- returns low priority
-		-n -- returns none priority
-
-complete: completes a tasks and removes it from completed tasks
-	usage: taskPanda done <taskID>
-
-clear: removes every tasks from storage
-	usuage: taskPanda clear`
+	helpStr := HELP_STR
 	stdH := &stdRW{}
 	redirectStdOut(stdH)
 	ts.Help()
