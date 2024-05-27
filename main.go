@@ -16,9 +16,7 @@ const (
 	del = "complete"
 	clear = "clear"
 	help = "help"
-
 )
-
 func main() {
 
 	s := store.NewStore()
