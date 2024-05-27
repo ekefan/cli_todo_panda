@@ -104,43 +104,45 @@ func TestDeleteTask(t *testing.T){
 		nt := randomTask()	
 		ts.Tasks = append(ts.Tasks, nt)
 	}
-	//case one correct id
-	field := []string{
-		"complete",
-		"2",
+	testCases := []struct{
+		name string
+		field []string
+		errMsg string
+	}{
+		{name: "Correct ID",field: []string{"complete","1",}},
+		{
+			name: "Id greater than number of task",
+			field: []string{"complete","35",}, 
+			errMsg:"No incomplete task with id, 35",
+		},
+		{
+			name: "Invalid ID",
+			field: []string{"complete","-1",}, 
+			errMsg:"<taskID must contain only integers within 1 - 10",
+		},
 	}
-	stdD := &stdRW{}
-	redirectStdOut(stdD)
-	lenBefore := len(ts.Tasks)
-	ts.DeleteTask(field)
-	receiveFromStdOut(stdD)
-	lenAfter := len(ts.Tasks)
-	require.Equal(t, lenBefore - lenAfter, 1)
-	//ID greater than highest task ID
-	field = []string{
-		"complete",
-		"35",
-	}
-	stdD = &stdRW{}
-	err = redirectStdOut(stdD)
-	require.NoError(t, err)
-	ts.DeleteTask(field)
-	msgString := receiveFromStdOut(stdD)
-	require.NotEmpty(t, msgString)
-	require.Equal(t, msgString, "No incomplete task with id, 35")
 
-	//Invalid Id
-	field = []string{
-		"complete",
-		"-1",
+	for _, tc := range(testCases) {
+		t.Run(tc.name, func(t *testing.T){
+			stdD := &stdRW{}
+			if tc.name == "Correct ID" {
+				redirectStdOut(stdD)
+				lenBefore := len(ts.Tasks)
+				ts.DeleteTask(tc.field)
+				receiveFromStdOut(stdD)
+				lenAfter := len(ts.Tasks)
+				require.Equal(t, lenBefore - lenAfter, 1)	
+			}else {
+				err = redirectStdOut(stdD)
+				require.NoError(t, err)
+				ts.DeleteTask(tc.field)
+				msgString := receiveFromStdOut(stdD)
+				require.NotEmpty(t, msgString)
+				require.Equal(t, msgString, tc.errMsg)
+			}
+
+		})
 	}
-	stdD = &stdRW{}
-	err = redirectStdOut(stdD)
-	require.NoError(t, err)
-	ts.DeleteTask(field)
-	msgString = receiveFromStdOut(stdD)
-	require.NotEmpty(t, msgString)
-	require.Equal(t, msgString, "<taskID must contain only integers within 1 - 10")
 }
 func TestClearAll(t *testing.T){
 	ts := NewStore()

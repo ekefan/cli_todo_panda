@@ -86,6 +86,7 @@ func fileExists() (*os.File, error){
 	return newFile, nil
 }
 
+//stdRW defines the struct that defines the fields from redirecting os.Stdout to a writer/reader and restoring it back.
 type stdRW struct {
 	old *os.File
 	reader *os.File
