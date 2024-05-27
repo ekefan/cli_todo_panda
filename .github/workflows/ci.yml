@@ -1,0 +1,24 @@
+name: CI_FOR_CLI_todoPanda
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22.1'
+    
+    - name: get dependencies
+      run: go mod tidy
+    - name: Test
+      run: go test -v ./store
