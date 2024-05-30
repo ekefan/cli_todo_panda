@@ -28,3 +28,4 @@ Binaries will be released for Linux, Mac and Windows, but for now, clone this re
 ```
 go build -o panda main.go
 ```
+Don't forget to move application to Path ...
