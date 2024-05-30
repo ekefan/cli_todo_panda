@@ -21,3 +21,11 @@ Now that's minimalistic.
 | task | needs no argument, its is used to show the list of incompleted tasks |
 | complete | needs one argument - the id, and is used to complete a task[the id is the serial number of the tasks] |
 | help | needs no argument, it displays the help information on request and in situations where an supported command is inputed |
+
+
+#### Quick Installation
+Binaries will be released for Linux, Mac and Windows, but for now.
+Clone this repository, the use the command to build the application
+```
+go build -o panda main.go
+```
