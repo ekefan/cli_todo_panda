@@ -24,8 +24,7 @@ Now that's minimalistic.
 
 
 #### Quick Installation
-Binaries will be released for Linux, Mac and Windows, but for now.
-Clone this repository, the use the command to build the application
+Binaries will be released for Linux, Mac and Windows, but for now, clone this repository, and use this command to build the application.
 ```
 go build -o panda main.go
 ```
