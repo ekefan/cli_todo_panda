@@ -8,14 +8,14 @@ A minimalist command line todo application
 - Receive help for using the application
 
 
-## ----
+## How it work in brief
 panda writes to, and reads from a json file which acts a storage for the tasks.
 The application reads commands from the cli and processes supported commands.
 If an invalid entry is made the application returns a help information.
 Now that's minimalistic.
 
 ### Supported Commands
-| cmd | use                                                             |
+| Commands | Use    |
 | :---| :---                                                            |
 | add | needs two args, the task as quoted and the priority (h or l, n) |
 | task | need no arg, its is used to show the list of incompleted tasks |
